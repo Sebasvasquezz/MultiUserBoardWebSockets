@@ -1,19 +1,19 @@
 
 # MultiUserBoard
 
-The project is a multiuser drawing board made up of two applications: one serves as the frontend and the other as the backend (API) built with Spring Boot. The backend includes two endpoints: one (GET) that returns a list of drawing actions, and another (POST) that receives and stores a new drawing action. The frontend, developed in React JS, displays a board where users can draw circles by clicking. Being multiplayer, it can run in multiple browsers at once, enabling users to see changes in semi-real-time.
+The project is a multiuser drawing board made up of two applications: one serves as the frontend and the other as the backend (API) built with Spring Boot. The backend now uses WebSockets to handle real-time communication between clients and the server. The frontend, developed in React JS, displays a board where users can draw circles by clicking. Being multiplayer, it can run in multiple browsers at once, enabling users to see changes in real-time.
 
 ### Features
 + **Draw**: You can draw consecutive circles using the mouse click.
 
 ## Getting Started
 Download the project from 
-[the repository.](https://github.com/Sebasvasquezz/MultiUserBoard.git)
+[the repository.](https://github.com/Sebasvasquezz/MultiUserBoardWebSockets)
 
 You can also clone the file using the following command.
 
 ```
-git clone https://github.com/Sebasvasquezz/MultiUserBoard.git  
+git clone https://github.com/Sebasvasquezz/MultiUserBoardWebSockets  
 ```
 
 ### Prerequisites
@@ -21,8 +21,6 @@ git clone https://github.com/Sebasvasquezz/MultiUserBoard.git
 * [Maven](https://maven.apache.org/): Automate and standardize the life flow of software construction
 
 * [Git](https://www.git-scm.com/): Decentralized Configuration Manager
-
-* [Node](https://nodejs.org/en/): A JavaScript runtime built on Chrome's V8 engine, enabling server-side scripting and development of scalable network applications.
 
 ### Installing
 1. Maven
@@ -33,10 +31,6 @@ git clone https://github.com/Sebasvasquezz/MultiUserBoard.git
 2. Git
     * Download git in https://git-scm.com/download/win
     * Follow the instructions in https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
-
-3. Node
-    * Download Node in https://nodejs.org/en
-    * Follow the instructions in https://nodejs.org/en/learn/getting-started/how-to-install-nodejs
 
 ### Installing
 
@@ -56,87 +50,67 @@ Once you have the cloned project in your repository. Follow the steps below to l
     mvn spring-boot:run
     ```
 
-#### Run FrontEnd React Js
-
-1. Open a terminal and enter the folder where I clone the repository and enter the BoardReact folder.
-
-2. Use the following command to install dependencies
-    ```
-    npm install
-    ```
-3. Now use the following command start proyect
-
-    ```
-    npm start
-    ```
-
 4. Now open a browser and go to the following [link](http://localhost:3000/) to start drawing:
-![Execution](images/image.png)
+![Execution local](/images/image-1.png)
 
+5. You can also open a browser and go to the following [link](http://ec2-174-129-46-215.compute-1.amazonaws.com:8080/) to access the project on AWS:
+![Execution in AWS](/images/image.png)
 
-## Proyect Structure
+## Project Structure
 
-### Run BackEnd Spring-boot
+### BackEnd Spring-boot
 
-- BoardApplication: Main application class for the Spring Boot application.
+- BBConfigurator: Configures the WebSocket server endpoint.
+- BBEndpoint: WebSocket endpoint for handling mouse click data and broadcasting it to all connected clients.
+- DrawingServiceController: REST controller for handling the status endpoint.
 
-- ClickController: REST controller for handling mouse click data.
+### FrontEnd React Js
 
-- Click: Represents a mouse click data object.
+#### Editor:
 
-### Run FrontEnd React Js
+- Contains the main layout of the application including the BBCanvas component.
 
-#### App:
+#### BBCanvas:
 
-- Contains the global state of the application (clicks and color).
-- Renders ActionFetcher and Canvas, passing them necessary functions and data as props.
+- Uses useRef to create references to the WebSocket connection and the p5 instance.
+- Defines a sketch to configure and draw on the canvas.
+- useEffect initializes the p5 instance and establishes the WebSocket connection when the component mounts.
+- Handles incoming WebSocket messages to draw points on the canvas.
+- drawPoint draws a circle on the canvas based on received coordinates.
 
-#### ActionFetcher:
+#### WSBBChannel:
 
-- Uses useEffect to execute fetchActions() every second using setInterval.
-- fetchActions() makes a GET request to the server to fetch drawing actions.
-- Updates the actions state in App using setActions.
+- Handles WebSocket connection logic, including opening the connection, receiving messages, handling errors, and sending messages.
 
-#### Board:
+#### BBServiceURL:
 
-- Uses useRef to create references to containerRef (the canvas container) and p5InstanceRef (the p5 instance).
-- Defines sketch to configure and draw on the canvas.
-- useEffect initializes the p5 instance and associates it with containerRef when the component mounts.
-- Another useEffect handles redrawing actions when actions change.
-- drawAction draws a circle on the canvas based on received actions.
-
-#### Server (API):
-
-- There are two endpoints:
-  - /clicks (GET): Returns a list of drawing actions.
-  - /clicks (POST): Receives a new drawing action and stores it.
-
+- Returns the WebSocket URL for the current host.
 
 ## Architectural Design
 
-![Architectural Design](images/image1.png)
+![Architectural Design](images/desing.png)
 
 ### Data Flow
 
 #### Initialization:
 
-- App mounts ActionFetcher and Canvas.
-- ActionFetcher starts making GET requests to the server every second to update actions.
+- Editor mounts BBCanvas.
+- BBCanvas initializes the p5 instance and establishes the WebSocket connection when the component mounts.
 
 #### Drawing:
 
-- When the user clicks on the canvas, Canvas creates a drawing action and sends it to the server via a POST request.
-- drawAction in Canvas immediately draws the action.
+- When the user clicks on the canvas, BBCanvas creates a drawing action and sends it to the server via WebSocket.
+- The WebSocket server (BBEndpoint) broadcasts the action to all connected clients.
+- BBCanvas immediately draws the action locally on the canvas.
 
 #### Update:
 
-- ActionFetcher periodically fetches actions from the server and updates the actions state in App.
-- Whenever actions updates, Canvas clears and redraws all actions on the canvas.
+- When BBCanvas receives a drawing action from the WebSocket server, it parses the action and draws the corresponding point on the canvas.
+- This ensures that all connected clients see the drawing actions in real-time.
 
 ## Built with
 
 * [Maven](https://maven.apache.org/) - Dependency management
-* [Node](https://nodejs.org/en/) - JavaScript runtime for building scalable network applications.
 
 ## Authors
 
@@ -144,7 +118,7 @@ Once you have the cloned project in your repository. Follow the steps below to l
 
 ## Date
 
-June 29, 2024
+Jule 9, 2024
 
 ## License
 
