@@ -1,5 +1,5 @@
 
-# MultiUserBoard
+# MultiUserBoardWebSockets
 
 The project is a multiuser drawing board made up of two applications: one serves as the frontend and the other as the backend (API) built with Spring Boot. The backend now uses WebSockets to handle real-time communication between clients and the server. The frontend, developed in React JS, displays a board where users can draw circles by clicking. Being multiplayer, it can run in multiple browsers at once, enabling users to see changes in real-time.
 

@@ -13,6 +13,10 @@ import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 import org.springframework.stereotype.Component;
 
+/**
+ * WebSocket endpoint for handling drawing actions via WebSocket protocol.
+ * This component manages WebSocket sessions, message processing, and error handling.
+ */
 @Component
 @ServerEndpoint("/bbService")
 public class BBEndpoint {
@@ -21,7 +25,11 @@ public class BBEndpoint {
     static Queue<Session> queue = new ConcurrentLinkedQueue<>();
     Session ownSession = null;
 
-    /* Call this method to send a message to all clients */
+    /**
+     * Sends a message to all connected WebSocket clients except the sender.
+     *
+     * @param msg The message to send.
+     */
     public void send(String msg) {
         try {
             /* Send updates to all open WebSocket sessions */
@@ -36,12 +44,23 @@ public class BBEndpoint {
         }
     }
 
+    /**
+     * Handles incoming messages from WebSocket clients.
+     *
+     * @param message The incoming message.
+     * @param session The session from which the message originated.
+     */
     @OnMessage
     public void processPoint(String message, Session session) {
         System.out.println("Point received:" + message + ". From session: " + session);
         this.send(message);
     }
 
+     /**
+     * Handles opening of WebSocket connections.
+     *
+     * @param session The newly opened WebSocket session.
+     */
     @OnOpen
     public void openConnection(Session session) {
         /* Register this connection in the queue */
@@ -55,6 +74,11 @@ public class BBEndpoint {
         }
     }
 
+    /**
+     * Handles closure of WebSocket connections.
+     *
+     * @param session The closed WebSocket session.
+     */
     @OnClose
     public void closedConnection(Session session) {
         /* Remove this connection from the queue */
@@ -62,6 +86,12 @@ public class BBEndpoint {
         logger.log(Level.INFO, "Connection closed.");
     }
 
+    /**
+     * Handles WebSocket errors.
+     *
+     * @param session The session in which the error occurred.
+     * @param t       The Throwable representing the error.
+     */
     @OnError
     public void error(Session session, Throwable t) {
         /* Remove this connection from the queue */
